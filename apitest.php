@@ -178,8 +178,16 @@ var apiList = [
             ,"test-value":""
           }
           ,{
-            "key":'content'
+            "key":'age'
             ,"type":'int'
+            ,"title":'age'
+            ,"desc":''
+            ,"required":true
+            ,"test-value":"29"
+          }
+          ,{
+            "key":'content'
+            ,"type":'string'
             ,"title":'content'
             ,"desc":''
             ,"required":true

@@ -6,10 +6,13 @@ The simple api tool for test.
 这是一个简单却非常实用的api接口测试调试工具，让开发者远离枯燥的API文档，直观而方便的进行接口调试。
 
 使用方法：
+
 拷贝apitest.php到API同域名目录下，在浏览器中访问即可。
 
 API配置方案：
+
 	*参考下面的配置代码，你可以指定API接口的Headers 和  Payload 规范。
+
 	*type类型里，支持md5、file类型哦
 
 =======
@@ -79,8 +82,16 @@ var apiList = [
             ,"test-value":""
           }
           ,{
-            "key":'content'
+            "key":'age'
             ,"type":'int'
+            ,"title":'age'
+            ,"desc":''
+            ,"required":true
+            ,"test-value":"29"
+          }
+          ,{
+            "key":'content'
+            ,"type":'string'
             ,"title":'content'
             ,"desc":''
             ,"required":true
