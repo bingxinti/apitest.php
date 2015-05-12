@@ -1,4 +1,52 @@
 var xhrTestingApi = null;
+
+Date.prototype.format = function(format)
+{
+    var o =
+    {
+    "M+" : this.getMonth()+1, //month
+    "d+" : this.getDate(), //day
+    "h+" : this.getHours(), //hour
+    "m+" : this.getMinutes(), //minute
+    "s+" : this.getSeconds(), //second
+    "q+" : Math.floor((this.getMonth()+3)/3), //quarter
+    "S" : this.getMilliseconds() //millisecond
+    }
+
+    if(/(y+)/.test(format))
+    {
+        format = format.replace(RegExp.$1, (this.getFullYear()+"").substr(4 - RegExp.$1.length));
+    }
+
+    for(var k in o)
+    {
+        if(new RegExp("("+ k +")").test(format))
+        {
+            format = format.replace(RegExp.$1, RegExp.$1.length==1 ? o[k] : ("00"+ o[k]).substr((""+ o[k]).length));
+        }
+    }
+    return format;
+}
+/**
+ * 自定义pretty-json展开方案，Local结尾的key不展开
+ */
+function expandAll(node)
+{
+  // console.log(node);
+  for (var i in node.childs)
+  {
+    var child = node.childs[i];
+    if(child instanceof PrettyJSON.view.Node)
+    {
+      if (!child.path.match(/.*Local$/))
+      {
+        child.show();
+        expandAll(child);
+      }
+    }
+  }
+}
+
 function searchApiKey(_this,_isSelect)
 {
     if (_isSelect)
@@ -93,7 +141,7 @@ function reFormGroup(_formType,_formRequest)
 {
   var _firstNode = $('form').find('[form-type='+_formType+']').first().closest(".form-group");
   $('form').find('[form-type='+_formType+']').last().closest(".form-group").after(_firstNode.clone(true));
-  var _inputs = $('form').find('[form-type='+_formType+']').last().closest(".form-group").attr('is-required',_formRequest['required']?'true':'false').trigger('mouseenter').trigger('mouseleave').attr('title',_formRequest['title']+"\n"+_formRequest['desc']).tooltip().show().find('input');
+  var _inputs = $('form').find('[form-type='+_formType+']').last().closest(".form-group").attr('is-required',_formRequest['required']?'true':'false').trigger('mouseenter').trigger('mouseleave').attr('title',_formRequest['title']+"<br/>"+_formRequest['desc']).attr('data-html',"true").tooltip().show().find('input');
   _inputs.eq(0).val(_formRequest['key']);
   if (_formRequest['type']=='file')
   {
@@ -107,6 +155,17 @@ function reFormGroup(_formType,_formRequest)
   }
   else
   {
+    if (_formRequest['test-value']=='')
+    {
+      if (_formRequest['type']=='datetime')
+      {
+        _formRequest['test-value'] = (new Date().format('yyyy-MM-dd hh:mm:ss'));
+      }
+      else if (_formRequest['type']=='date')
+      {
+        _formRequest['test-value'] = (new Date().format('yyyy-MM-dd'));
+      }
+    }
     _inputs.eq(1).val(_formRequest['test-value']);
   }
   if (_formType=='field')
@@ -127,9 +186,11 @@ function reFormGroup(_formType,_formRequest)
 function reFormApi(i)
 {
   var _api = apiList[i];
+  document.getElementsByTagName('title')[0].innerHTML = _api['title']+'　　/　　API:测试工具';
   if (_api['action'].indexOf('http')<0)
   {
     _api['action'] = window.location.protocol +'//'+ window.location.host + (_api['action'].indexOf('/')==0?'':window.location.pathname.replace(/\/[^\/]+$/g,'')+'/') + _api['action'];
+    _api['action'] = _api['action'].replace(/\/[^\/]+\/\.\.\//g,'/');
   }
   $('#link_api_url').val(_api['action']);
 
@@ -188,14 +249,19 @@ $(function(){
     {
       var _api = apiList[i];
       var _keyString = '';
-      _keyString = 'url    : '+_api['action']+'<br/>';
+      _keyString = '';
+      if (_api['desc']!='')
+      {
+        _keyString = _api['desc'].replace('\n','<br/>').replace(/[\n\r]/g,'<br/>')+'<br/><br/>';
+      }
+      _keyString += 'url    : '+_api['action']+'<br/>';
         if (_api['request'].length>0)
         {
           _keyString += '<table class="table table-striped">';
           _keyString += '<tr><th>字段名</th><th>必须</th><th>格式</th><th>字段描述</th><th>测试值</th></tr>';
           for(var j in _api['request'])
           {
-            _keyString+='<tr onclick="reFormGroupApi('+i+','+j+');"><td>'+_api['request'][j]['key']+'</td><td>'+(_api['request'][j]['required']?'是':'否')+'</td><td>'+_api['request'][j]['type']+'</td><td>'+_api['request'][j]['title']+ _api['request'][j]['desc']+'</td><td>'+_api['request'][j]['test-value']+'</td></tr>'
+            _keyString+='<tr onclick="reFormGroupApi('+i+','+j+');"><td>'+_api['request'][j]['key']+'</td><td>'+(_api['request'][j]['required']?'是':'否')+'</td><td>'+_api['request'][j]['type']+'</td><td>'+_api['request'][j]['title']+(_api['request'][j]['desc']!=''?'<br/>':'')+ _api['request'][j]['desc']+'</td><td>'+_api['request'][j]['test-value']+'</td></tr>'
           }
           _keyString += '</table>';
         }
@@ -213,7 +279,7 @@ $(function(){
       _listNode.append(_panelString);
       if (_api['title'].match(/[：:]/g))
       {
-        var _keyType = _api['title'].replace(/[：:].*/g,'');
+        var _keyType = _api['title'].replace(/([：:]).*/g,'$1');
         _keyTypes[_keyType]=1;
       }
     }
@@ -291,10 +357,15 @@ $(function(){
           data: json,
           dateFormat:"DD/MM/YYYY - HH24:MI:SS"
       });
-      node.expandAll();
+      console.log(node);
+      // node.expandAll();
+      expandAll(node);
     }
 
     $('#btn_test_url').click(function(){
+
+      $('form').find('.input-group-addon').trigger('click');
+
         $('#textarea_results').val('waiting....');
         $('#div_json_view').html('waiting....');
 
@@ -331,7 +402,7 @@ $(function(){
 
             error: function(XHR,textStatus,errorThrown) {
                 console.log(XHR,textStatus,errorThrown);
-                $('#textarea_results').val('error');
+                $('#textarea_results').val(XHR.responseText);
                 alert ("XHR="+XHR+"\ntextStatus="+textStatus+"\nerrorThrown=" + errorThrown);
             },
 

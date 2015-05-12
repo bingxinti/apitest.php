@@ -1,6 +1,6 @@
 <?php
     // by wanyaxing@gmail.com
-    // version: 150106.2
+    // version: 150430.1
 	  date_default_timezone_set("Asia/shanghai");
     if( ($_SERVER['SERVER_ADDR'] != $_SERVER['REMOTE_ADDR']) &&
             (!array_key_exists('PHP_AUTH_USER', $_SERVER) || !array_key_exists('PHP_AUTH_PW', $_SERVER) || $_SERVER['PHP_AUTH_USER']!='12345679' || $_SERVER['PHP_AUTH_PW']!='12345679') ) {
@@ -11,7 +11,7 @@
     if (count($_GET)>0 || count($_POST)>0)
     {
       header('Content-Type:text/javascript; charset=utf-8');
-      print(json_encode(array('$_GET'=>$_GET,'$_POST'=>$_POST,'getallheaders()'=>getallheaders(),'$_FILES'=>$_FILES,'$_SERVER'=>$_SERVER)));
+      print(json_encode(array('$_GET'=>$_GET,'$_POST'=>$_POST,'$_FILES'=>$_FILES,'getallheaders()'=>getallheaders(),'$_SERVER'=>$_SERVER)));
       exit;
     }
 ?>
@@ -22,9 +22,9 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title> API：测试工具 </title>
-	<link href="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/bootstrap/css/bootstrap.css" rel="stylesheet">
-  <link href="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/pretty-json/css/pretty-json.css" rel="stylesheet">
-  <!-- <link href="http://7u2f1w.com1.z0.glb.clouddn.com/apitest.css?v=150106.4" rel="stylesheet"> -->
+	<link href="http://sae.wanyaxing.com/cdn/bootstrap/bootstrap.css" rel="stylesheet">
+  <link href="http://sae.wanyaxing.com/cdn/pretty-json/pretty-json.css" rel="stylesheet">
+  <!-- <link href="http://sae.wanyaxing.com/cdn.css?v=150106.4" rel="stylesheet"> -->
 	<link href="apitest.css" rel="stylesheet">
 </head>
 <body>
@@ -65,7 +65,7 @@
     				      </div>
     				      <div class="col-sm-8">
                     <div class="input-group">
-      					      <input class="form-control"  placeholder="Enter the value" value="">
+      					      <input class="form-control"  type="text" placeholder="Enter the value" value="">
                       <div class="input-group-addon" style="display: none;">reload</div>
                     </div>
     				      </div>
@@ -81,7 +81,7 @@
     					      <input class="form-control" form-type="field"   placeholder="field key" value="">
     				      </div>
     				      <div class="col-sm-8">
-    					      <input class="form-control"  placeholder="Enter the value" value="">
+    					      <input class="form-control" type="text" placeholder="Enter the value" value="">
     				      </div>
               </div>
   				  </div>
@@ -106,15 +106,28 @@
   </div>
 	</div>
 </body>
-<script src="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/bootstrap/js/jquery.min.js"></script>
-<script src="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/bootstrap/js/bootstrap.js"></script>
-<script src="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/md5.js"></script>
-<script type="text/javascript" src="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/pretty-json/libs/underscore-min.js" ></script>
-<script type="text/javascript" src="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/pretty-json/libs/backbone-min.js" ></script>
-<script type="text/javascript" src="http://7u2f1w.com1.z0.glb.clouddn.com/apitest/pretty-json/libs/pretty-json-min.js" ></script>
-<!-- <script type="text/javascript" src="http://7u2f1w.com1.z0.glb.clouddn.com/apitest.js?v=150106.10" ></script> -->
+<script src="http://sae.wanyaxing.com/cdn/jquery/jquery.min.js"></script>
+<script src="http://sae.wanyaxing.com/cdn/bootstrap/bootstrap.js"></script>
+<script src="http://sae.wanyaxing.com/cdn/md5/md5.js"></script>
+<script type="text/javascript" src="http://sae.wanyaxing.com/cdn/pretty-json/underscore-min.js" ></script>
+<script type="text/javascript" src="http://sae.wanyaxing.com/cdn/pretty-json/backbone-min.js" ></script>
+<script type="text/javascript" src="http://sae.wanyaxing.com/cdn/pretty-json/pretty-json-min.js" ></script>
+<!-- <script type="text/javascript" src="http://sae.wanyaxing.com/cdn.js?v=150106.10" ></script> -->
 <script type="text/javascript" src="apitest.js" ></script>
-<script type="text/javascript">
-<?php require('apitest-config.js'); ?>
-</script>
+<?php
+  if (file_exists('apitest-config.js'))
+  {
+    printf('<script type="text/javascript" src="%s" ></script>','apitest-config.js');
+    foreach(  (array)glob(__dir__ . "/apitest-config.*.js" ) as $_jobFile )/* Match md5_2. */
+    {
+      print("\n");
+      printf('<script type="text/javascript" src="%s" ></script>',basename($_jobFile));
+    }
+  }
+  else
+  {
+    print('<script type="text/javascript">alert("错误，无法引入apitest-config.js文件，请检查");</script>');
+  }
+?>
+
 </html>
